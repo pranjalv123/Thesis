@@ -1,0 +1,241 @@
+%%
+%% This is file `thesis-ex.tex',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% uiucthesis2014.dtx  (with options: `example')
+%% 
+\def\fileversion{v2.25b} \def\filedate{2014/05/02}
+%% Package and Class "uiucthesis2014" for use with LaTeX2e.
+\documentclass[edeposit,fullpage]{uiucthesis2014}
+
+
+
+\usepackage[utf8]{inputenc}
+
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{hyperref}
+\usepackage{array, tabularx, caption, boldline}
+\usepackage{makecell}
+\usepackage{cellspace}
+\usepackage[citestyle=numeric-comp]{biblatex}
+
+\addbibresource{thesisbib.bib}
+\addbibresource{astrid.bib}
+\addbibresource{astrid-missing.bib}
+\addbibresource{siesta.bib}
+\addbibresource{svdquest.bib}
+%\addbibresource{hgt.bib}
+\addbibresource{fastrfs.bib}
+
+
+
+\theoremstyle{definition}
+\newtheorem{thm}{Theorem}
+\newtheorem{lemma}[thm]{Lemma}
+\newtheorem{theorem}[thm]{Theorem}
+\newtheorem{definition}[thm]{Definition}
+\newtheorem{cor}[thm]{Corollary}
+\newtheorem{rem}[thm]{Remark}
+\newtheorem{remark}[thm]{Remark}
+\newtheorem{conj}[thm]{Conjecture}
+\newtheorem{observation}[thm]{Observation}
+
+\pdfstringdefDisableCommands{%
+  \let\enspace\empty  % this causes the warning for \kern
+  \let\noindent\empty % this causes the warning for\indent
+  \let\hskip\empty
+}
+
+\begin{document}
+
+\title{Large Scale Phylogenomic Estimation}
+\author{Pranjal Vachaspati}
+\department{Computer Science}
+%\schools{B.A., University of Columbia, 1981\\
+%         A.M., University of Illinois at Urbana-Champaign, 1986}
+\phdthesis
+\advisor{Tandy Warnow}
+\degreeyear{2019}
+\committee{Professor Prof Uno, Chair\\Professor Prof Dos, Director of Research\\Assistant Professor Prof Tres\\Adjunct Professor Prof Quatro}
+\maketitle
+
+\frontmatter
+
+%% Create an abstract that can also be used for the ProQuest abstract.
+%% Note that ProQuest truncates their abstracts at 350 words.
+\begin{abstract}
+\end{abstract}
+
+%% Create a dedication in italics with no heading, centered vertically
+%% on the page.
+\begin{dedication}
+\end{dedication}
+
+%% Create an Acknowledgements page, many departments require you to
+%% include funding support in this.
+\chapter*{Acknowledgments}
+
+
+%% The thesis format requires the Table of Contents to come
+%% before any other major sections, all of these sections after
+%% the Table of Contents must be listed therein (i.e., use \chapter,
+%% not \chapter*).  Common sections to have between the Table of
+%% Contents and the main text are:
+%%
+%% List of Tables
+%% List of Figures
+%% List Symbols and/or Abbreviations
+%% etc.
+
+\tableofcontents
+\listoftables
+\listoffigures
+
+%% Create a List of Abbreviations. The left column
+%% is 1 inch wide and left-justified
+\chapter{List of Abbreviations}
+
+\begin{symbollist*}
+%\item[CA] Caffeine Addict.
+%\item[CD] Coffee Drinker.
+\item[ILS] Incomplete Lineage Sorting
+\end{symbollist*}
+
+%% Create a List of Symbols. The left column
+%% is 0.7 inch wide and centered
+%\chapter{List of Symbols}
+
+%\begin{symbollist}[0.7in]
+%\item[$\tau$] Time taken to drink one cup of coffee.
+%\item[$\mu$g] Micrograms (of caffeine, generally).
+%\item[$n$] Number of taxa
+%\end{symbollist}
+
+\mainmatter
+\part{Introduction}
+
+\chapter{Phylogenomic estimation}
+
+\section{Organization of this work}
+
+
+
+Chapter \ref{chapter:background} provides much of the background necessary to understand this research into phylogenomic methods, including the relatively minimal amount of biology needed to describe the relevant mathematical models of evolution.
+
+\chapter{Background}
+\label{chapter:background}
+\section{Phylogenetic trees}
+
+The use of a phylogenetic tree to describe evolutionary relationships was popularized by Darwin, who used a diagram of a tree as the sole illustration in \emph{On the Origin of Species} \cite{darwin1859origin}. While the methods used to estimate these trees have changed drastically, the basic structure and meaning of these trees is more or less the same.
+
+The leaves of a phylogenetic tree represent extant taxa that have been sampled for the analysis, referred to as the taxon set. 
+
+Internal nodes represent speciation events. An internal node also represents a species that is the most recent common ancestor of all the descendants of that node, and in some cases (for example, when fossil data is used), may correspond to a known species.
+
+Edges represent the evolution of a species without any speciation events that led to multiple extant species in the dataset (that is to say, speciation events may have occurred along an edge, but only one of those species survived to the present day and was included in the analysis). Edges may have a length, which represents the amount of time between speciation events. 
+
+
+Each edge also corresponds to a split, or bipartition, in the taxon set. The descendants of an internal node $n$ are a clade, and the parent edge of that node separates that clade from the rest of the taxa, which do not have $n$ as an ancestor. 
+
+
+%\subsection{Rooted and unrooted trees}
+
+Phylogenetic trees may be rooted or unrooted. In many models of evolution, the root is not identifiable; in other words, every rooting of the same unrooted tree will produce the same distribution of site patterns on the leaves of the tree. Accurately identifying the root of an unrooted tree can be challenging in some cases, especially for gene trees that evolve under ILS or HGT (see Section \ref{sec:heterogeneity}). 
+%TODO figure
+
+Trees may be binary or multifurcating (non-binary). Each internal node in a binary tree has degree $3$ (except for the root, which has degree $2$), while internal nodes in multifurcating trees may have higher degrees. Since speciation events are in reality binary, multifurcations in trees represent an uncertainty as to the ordering of two or more speciation events.
+%TODO figure
+
+\section{A simple model of evolution}
+\label{section:simple-model}
+
+
+
+\section{The phylogenomic pipeline}
+A phylogenomic analysis starts with biological specimens. Biologists extract DNA from each specimen and run it through a DNA sequencing machine. The sequencing process will chop the genome into overlapping reads that may range from tens of base pairs to thousands of base pairs, depending on the sequencing technology. An assembler then combines the reads into genomes. The next step is to align the genomes. An alignment algorithm adds ``indels'' to each genome to make them all the same length. The $i^{th}$ site in each genome is assumed to correspond to the same site in the common ancestor of the organisms being studied, having evolved through a sequence of substitutions, insertions, and deletions. At this point, a variety of methods can be used to analyze the genomes to generate an evolutionary tree.
+
+This dissertation focuses on the last stage of this pipeline: starting from an alignment and generating an evolutionary tree. Nevertheless, the earlier stages are important as errors produced there will result in inaccuracies in the final tree.
+
+The following sections will discuss various factors that make phylogenomic estimation more complicated than the simple model from Section \ref{section:simple-model} would imply. 
+
+\section{Gene tree heterogeneity}
+\label{sec:heterogeneity}
+A variety of biological effects complicate evolutionary models and create a need for more sophisticated phylogenomic algorithms. Some of the most interesting and important effects result in gene tree heterogenity, where different parts of the genome appear to have evolved in different ways. 
+
+subsection{Horizontal gene transfer (HGT)}
+
+%TODO figure
+The easiest to understand cause of gene tree heterogeneity is horizontal (or lateral) gene transfer (HGT or LGT). 
+
+\subsection{Incomplete lineage sorting (ILS)}
+\subsection{Short loci}
+
+%things outside of the scope of my thesis
+\section{Additional sources of error in phylogenomic analyses}
+\subsection{Rate heterogeneity}
+\subsection{Alignment error}
+
+\section{Techniques for phylogenomic estimation}
+
+\subsection{Concatenated maximum-likelihood (CA-ML) analyses}
+\subsection{Bayesian Markov chain Monte Carlo methods}
+\subsection{Coalescent-aware methods}
+\subsubsection{ASTRAL}
+\subsubsection{MP-EST}
+\subsubsection{NJst}
+
+\section{Supertree estimation}
+\subsection{Methods}
+\subsubsection{MRL}
+\subsection{Divide and conquer methods}
+
+\part{Supertree Estimation}
+\chapter{FastRFS}
+\input{fastrfs.tex}
+
+\chapter{Improving Dynamic Programming for Phylogenomic Estimation with SIESTA}
+\input{siesta.tex}
+\section{Supplementary data for SIESTA}
+\input{siesta-supplement.tex}
+
+\chapter{Supertree Estimation with ASTRID}
+\input{astrid-missing.tex}
+
+
+
+
+\part{Species Tree Estimation}
+\chapter{Species Tree Estimation with ASTRID}
+\input{astrid.tex}
+\section{Additional Implementation details}
+\subsection{Fast distance matrix calculation}
+\subsection{Distance methods}
+\subsection{Handling multiple individuals per taxon}
+
+
+\chapter{SVDquest}
+\input{svdquest.tex}
+
+\chapter{Species Tree Estimation with ILS and HGT}
+%\input{hgt.tex}
+
+
+\chapter{Conclusions}
+
+\chapter{Bibliography}
+\printbibliography
+
+\appendix*
+\include{Appendix.tex}
+
+\backmatter
+
+
+\end{document}
+\endinput
+%%
+%% End of file `thesis-ex.tex'.
