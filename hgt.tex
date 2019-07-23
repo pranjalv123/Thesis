@@ -52,7 +52,7 @@ in probability to the true species tree \cite{WarnowCurrents2015}.
 Many statistically 
 consistent summary methods have been developed for estimating species trees 
 when gene discordance is due to ILS 
-\cite{mpest,Mossel2010,STEM,star,njst,Astral,Astral2}. 
+\cite{MPEST,Mossel2010,STEM,star,NJst,astral,ASTRAL2}. 
 
 Despite advances in
 developing statistically
@@ -64,14 +64,14 @@ concatenation analysis,
 in which the sequence alignments for the
 different loci are combined into one
 large supermatrix, and then a phylogeny is
-estimated on the alignment using maximum likelihood \cite{jarvis2014whole,1kp}.
+estimated on the alignment using maximum likelihood \cite{jarvis2014whole,1kp-pnas}.
 This type of approach, however, 
  is sometimes  not statistically consistent under the multi-species coalescent
-model \cite{RochSteel,WarnowCurrents2015}
+model \cite{RochSteel2014,WarnowCurrents2015}
 in the presence of ILS. 
 Hence, even though concatenation
 often has good accuracy (even under conditions with moderately 
-high ILS levels) \cite{GatesySpringer,patel2013error,naive-binning},
+high ILS levels) \cite{gatesy2013concatenation,patel2013error,naive-binning},
 a large effort has been made to develop 
 alternative methods that are provably robust to ILS and
 have good accuracy on realistic conditions.
@@ -79,18 +79,18 @@ have good accuracy on realistic conditions.
 For very small datasets, 
 Bayesian
 methods such as 
-BEST \cite{best}, 
+BEST \cite{BEST}, 
 *BEAST \cite{Heled2010} or BUCKy-pop \cite{Larget2010} 
 (the population tree from BUCKy)  can provide
 excellent accuracy; however, these methods are too
 computationally intensive to use on even moderate sized datasets
-with hundreds to thousands of loci and 30 or more species \cite{Zimmermann2014,YangWarnow}. 
+with hundreds to thousands of loci and 30 or more species \cite{bbca,Yang2011}. 
 
 
 
 
 Of the currently available coalescent-based methods, 
-ASTRAL-2 \cite{Astral2}, MP-EST \cite{Liu2010a},
+ASTRAL-2 \cite{ASTRAL2}, MP-EST \cite{Liu2010a},
 and NJst \cite{liu2011estimating} have emerged as the most
 accurate of the methods that
 can run 
@@ -98,7 +98,7 @@ on datasets with 50 or more species and hundreds to thousands
 of loci. 
 However, the comparison among these methods shows that MP-EST is
 typically not as accurate as NJst and ASTRAL-2
-and is also much slower than both   \cite{Astral2}.
+and is also much slower than both   \cite{ASTRAL2}.
 Some newer statistically consistent
 methods
 have also been developed
@@ -115,7 +115,7 @@ trees (i.e.,
 unrooted 4-leaf trees), and then estimate the species tree from
 the quartet tree frequencies.
 The mathematical  basis of this approach
-is the following theorem, originally proved in \cite{AllmanDegnanRhodes2011a}:
+is the following theorem, originally proved in \cite{Allman}:
 \begin{theorem}
 Under the multi-species coalescent model, 
 for every
@@ -252,7 +252,7 @@ HGT models of \cite{RochSnir}.
 This proof uses Theorem \ref{hgt::theorem1}, 
 but is essentially identical to the proofs of
 statistical consistency for ASTRAL and ASTRAL-2 under
-the MSC model \cite{Astral2}; see Methods for
+the MSC model \cite{ASTRAL2}; see Methods for
 the proof of this theorem.
 
 
@@ -287,7 +287,7 @@ large datasets
 (e.g., BEST is slower than *BEAST, and *BEAST is
 too computationally intensive to use on datasets with
 more than about 100 loci)
-\cite{YangWarnow,Zimmermann2014}.
+\cite{Yang2011,bbca}.
 
 
 
@@ -327,7 +327,7 @@ between the true gene trees and the species tree for all six model conditions. N
 
 
 We estimated gene trees on each
-locus using the FastTree-2  maximum likelihood software \cite{FastTree2}, 
+locus using the FastTree-2  maximum likelihood software \cite{price2010fasttree}, 
 and then used the 
 summary methods on these 
 estimated gene trees to estimate the species tree.
@@ -610,7 +610,7 @@ However, all summary methods we explored were impacted
 by gene tree estimation error. Furthermore,   there are no proofs
 of convergence to the true species tree if the gene
 trees have estimation error for these or other
-standard summary methods \cite{RochWarnow,WarnowCurrents2015}.
+standard summary methods \cite{roch2015robustness,WarnowCurrents2015}.
 Since many of the lower HGT model conditions
 had substantial gene tree heterogeneity resulting from ILS,
 this study shows that many methods — and even unpartitioned concatenation  using
@@ -832,9 +832,9 @@ we run wQMC version 3.0 using the following command:
 \end{verbatim}
 
 \subsubsection{ASTRAL and ASTRAL-2}
-ASTRAL \cite{Astral} and 
+ASTRAL \cite{astral} and 
 its improved version, 
-ASTRAL-2 \cite{Astral2}, 
+ASTRAL-2 \cite{ASTRAL2}, 
 also attempt to solve the MQSST problem.
 Both have exact versions that provably solve the
 MQSST problem but run in exponential time, and faster
@@ -864,7 +864,7 @@ for many datasets $|\mathcal{X}|$ is
 not very large, so that
 ASTRAL-2 is able to complete analyses 
 within 24 hours  on 
-1000 species and 1000 genes \cite{Astral2}.
+1000 species and 1000 genes \cite{ASTRAL2}.
 
 ASTRAL-2
 finds a globally optimal solution to the constrained optimization problem
@@ -875,7 +875,7 @@ use the constrained search),  are both
 statistically consistent under the multispecies
 coalescent model when all the gene trees are complete (i.e.,  this restriction
 to the set $\mathcal{X}$ of bipartitions does not change
-their statistical guarantees) \cite{Astral2}.
+their statistical guarantees) \cite{ASTRAL2}.
 
 We now provide a proof for  Theorem \ref{hgt::theorem-corollary}, establishing that
 ASTRAL and ASTRAL-2, 
@@ -887,7 +887,7 @@ HGT models.
 %Ruth: removed sketch comment, added a few words here are there
 \noindent
 {\bf Proof for Theorem \ref{hgt::theorem-corollary}}.
-As proved in \cite{Astral,Astral2}, 
+As proved in \cite{astral,ASTRAL2}, 
  ASTRAL and ASTRAL-2 are guaranteed to
 find globally optimal solutions to the constrained MQSST problem. 
 The default settings for the constraint set $\mathcal{X}$ of
@@ -899,7 +899,7 @@ Therefore, with probability converging to $1$, the true
 species tree will be a feasible solution (i.e., within the
 constrained search space) as the number of loci
 and number of sites per locus both increase (as established
-in \cite{Astral,Astral2}). 
+in \cite{astral,ASTRAL2}). 
 Recall that the quartet support score of a tree
 $T$
 is 
@@ -979,7 +979,7 @@ where
 {\tt bootstrap replicates}
 is the collection of 1128 gene trees generated by taking the $n^{th}$ line of the gene tree file $n = \{1, \ldots , 100\}$, and
 {\tt species replicate}
-is the $n^{th}$ bootstrap replicate species tree $T_{n}$.  To calculate the final species tree $T$ with bootstrap support values, we computed the majority consensus tree using Dendropy version 3.12.2  \cite{Dendropy}.  
+is the $n^{th}$ bootstrap replicate species tree $T_{n}$.  To calculate the final species tree $T$ with bootstrap support values, we computed the majority consensus tree using Dendropy version 3.12.2  \cite{dendropy}.  
 %This was done by populating a Dendropy TreeList object from the collection $S_{n}$ and then obtaining $T$  via the command 
 %\begin{verbatim}  T= dendropy.TreeList.get_from_path(**kwargs) \end{verbatim} and then calling the method \begin{verbatim} Tn.consensus() \end{verbatim} in default mode, which requires the minimum frequency of a split appearing in the consensus tree to be 50\%.
 %Ruth - this detail should go into some external document that
@@ -990,7 +990,7 @@ NJst is a summary method that
 has two steps. In the first step, it computes a distance matrix on
 the species set, where $D[x,y]$ is the average
 leaf-to-leaf topological distance between $x$ and $y$ among all the
-gene trees. In the second step, it runs neighbor joining \cite{NJ}, a popular
+gene trees. In the second step, it runs neighbor joining \cite{nj}, a popular
 distance-based phylogeny estimation method. 
 NJst is statistically consistent under the 
 MSC model
@@ -999,10 +999,10 @@ probability to an additive matrix defining the true
 species tree, and neighbor joining will return
 the true species tree once the computed distance matrix  is
 sufficiently close to the additive matrix for the species tree; see
-\cite{njst} for this proof.
+\cite{NJst} for this proof.
 
  %Jun17 - changed below
-To run NJst, we used phybase version 1.4 \cite{phybase}
+To run NJst, we used phybase version 1.4
 and custom scripts, available in our supplementary material. 
 %{\tt https://faculty.franklin.uga.edu/lliu/content/phybase}, 
 %using the following
@@ -1101,7 +1101,7 @@ simphy -rs 50 -rl U:1000,1000 -rg 1 -st U:2000000,2000000 -si U:1,1
  
 On each simulated true gene tree, we used INDELible
  \cite{Indelible} v.~1.03  to simulate sequence alignments according to the GTR+$\Gamma$ model,  with model parameters estimated from three different real datasets (these parameters are identical to those 
-used in \cite{Astral2}). 
+used in \cite{ASTRAL2}). 
 This simulation  produces 
 GTR parameters that vary from one gene to another,
 where the parameters are drawn for each gene from a distribution at random. 
@@ -1110,7 +1110,7 @@ where the parameters are drawn for each gene from a distribution at random.
 %substitution matrix. The alpha parameter for rates-across-sites 
 %was drawn from  an exponential(1.2) distribution, truncated from below at $0.1$. 
 %The parameter for these models were estimated from real data. 
-See \cite{Astral2} for details about the simulation process.
+See \cite{ASTRAL2} for details about the simulation process.
 %INDELible runs using control files always labeled ``control.txt", 
 %which are far too large to represent in a manuscript of this type. 
 %The control files used to generate the sequence alignments for this data are available in compressed form at  
@@ -1118,7 +1118,7 @@ See \cite{Astral2} for details about the simulation process.
 %\end{verbatim}\begin{verbatim}control-txt-Indelible-controls-for-Davidsonetal.zip?dl=0
 %\end{verbatim}
 The alignment length is set to 1000bp for all genes. 
-After simulating gene alignments, we used FastTree-2 \cite{FastTree2} to estimate gene trees under the GTR model.  Thus for each replicate, we have both true and estimated gene trees.  
+After simulating gene alignments, we used FastTree-2 \cite{price2010fasttree} to estimate gene trees under the GTR model.  Thus for each replicate, we have both true and estimated gene trees.  
 
 For HGT rate (1) (where all the discordance is due to ILS), 
 the average RF \cite{RF} distance between 
