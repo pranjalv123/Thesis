@@ -101,9 +101,13 @@
 \chapter{List of Abbreviations}
 
 \begin{symbollist*}
-%\item[CA] Caffeine Addict.
-%\item[CD] Coffee Drinker.
+\item[AD] Average distance between true gene trees and true species tree (a measure of ILS)
+\item[CA-ML] Concatenated Maximum-Likelihood
+\item[GTR] Generalized Time Reversible
+\item[HGT] Horizontal Gene Transfer
 \item[ILS] Incomplete Lineage Sorting
+\item[ML] Maximum-Likelihood
+\item[RF distance] Robinson-Foulds distance
 \end{symbollist*}
 
 %% Create a List of Symbols. The left column
@@ -121,64 +125,253 @@
 
 \chapter{Phylogenomic estimation}
 
+
+The goal of phylogenomic estimation is to estimate evolutionary trees
+from genomic data. An evolutionary tree is a representation of the
+evolutionary history of the organisms being studied. Finding accurate
+evolutionary trees is an interesting scientific problem in itself, and
+these trees are also key components of a number of downstream
+biological analyses.
+
+As genomic sequencing costs continue to fall dramatically \cite{},
+cutting-edge phylogenomic analyses increases in two dimensions: in the
+number of organisms (taxa) studied; and in the amount of genetic
+information considered per taxon. Upcoming analyses, including the
+next phase of the Avian Phylogenomics Project \cite{}, the 10,000 plat
+genome project \cite{}, the Genome 10k project \cite{}, the i5k
+arthropod genome project \cite{}, and others, will analyze whole
+genomes of thousands or tens of thousands of taxa.
+
+The scale of this data presents unique computational challenges, as
+many existing methods were designed to run on datasets with tens or
+hundreds of taxa. In addition to running efficiently on large
+datasets, new methods must also estimate accurate trees on datasets
+generated under a range of biological conditions that complicate
+phylogenomic analyses, including incomplete lineage sorting and
+horizontal gene transfer.
+
 \section{Organization of this work}
 
+Chapter \ref{chapter:background} provides much of the background
+necessary to understand this research into phylogenomic methods,
+including the relatively minimal amount of biology needed to describe
+the relevant mathematical models of evolution.
 
+\subsection*{Part \ref{part:supertree}}
 
-Chapter \ref{chapter:background} provides much of the background necessary to understand this research into phylogenomic methods, including the relatively minimal amount of biology needed to describe the relevant mathematical models of evolution.
+Part \ref{part:supertree} focuses on supertree estimation. The goal of
+supertree estimation is to combine small trees on subsets of a larger
+taxon set into a single tree on the entire taxon set. Supertree
+estimation is commonly used to combine results of smaller analyses (as
+in \cite{seabirds,cpl,thpl,marsupials,placental}).
+
+A supertree method can also be used as a component of a
+divide-and-conquer technique for species tree estimation. These
+techniques \cite{} divide a large dataset into many small, overlapping
+datasets, and run a species tree estimation method on each
+subset. Then, a supertree method is used to combine trees on the
+subsets into a tree on the entire taxon set. In this way, methods that
+may be too slow or memory intensive to run on a large dataset directly
+may still be used to analyze that dataset.
+
+We describe two methods for supertree estimation: FastRFS and ASTRID
+
+Chapter \ref{chapter:fastrfs} introduces FastRFS
+\cite{fastrfs}. Designed as a supertree method, FastRFS uses a
+constrained optimization technique to exactly solve its NP-hard
+optimization criterion within a constrained search space.
+
+Chapter \ref{chapter:siesta} describes SIESTA, an improvement to the
+constrained optimization algorithm used in FastRFS that allows it to
+consider multiple optimal solutions to its optimization criterion and
+return consensus trees of those solutions.
+
+Chapter \ref{chapter:astrid-missing} describes modifications to ASTRID
+(which is discussed in more detail in the species-tree context in
+Chapter \ref{chapter:astrid}) that allow it to be used effectively for
+very large species tree analyses.
+
+\subsection*{Part \ref{part:speciestree}}
+
+Part \ref{part:speciestree} discusses methods for species tree
+estimation. These methods take evolutionary trees on individual genes
+(gene trees) as input, which may differ from one another due to
+various biological effects, and return a species tree, which
+represents the actual evolutionary history of the organisms.
+
+Chapter \ref{chapter:astrid} describes ASTRID, a distance matrix based
+method for species tree estimation. ASTRID provides highly accurate
+species trees, and is capable of analyzing extremely large datasets in
+a short amount of time.
+
+Chapter \ref{chapter:svdquest} introduces SVDquest, which is an
+implementation of the SVDquartets method that uses a constrained
+optimization technique to exactly optimize the SVDquartets
+optimization criterion within a constrained search space. This allows
+accurate species trees to be estimated directly from alignments in a
+statistically consistent manner.
+
+Chapter \ref{chapter:hgt} analyzes the behavior of phylogenetic
+estimation methods on datasets with incomplete lineage sorting (ILS)
+as well as horizontal gene transfer (HGT). 
+
 
 \chapter{Background}
 \label{chapter:background}
 \section{Phylogenetic trees}
 
-The use of a phylogenetic tree to describe evolutionary relationships was popularized by Darwin, who used a diagram of a tree as the sole illustration in \emph{On the Origin of Species} \cite{darwin1859origin}. While the methods used to estimate these trees have changed drastically, the basic structure and meaning of these trees is more or less the same.
+The use of a phylogenetic tree to describe evolutionary relationships
+was popularized by Darwin, who used a diagram of a tree as the sole
+illustration in \emph{On the Origin of Species}
+\cite{darwin1859origin}. While the methods used to estimate these
+trees have changed drastically, the basic structure and meaning of
+these trees is more or less the same.
 
-The leaves of a phylogenetic tree represent extant taxa that have been sampled for the analysis, referred to as the taxon set. 
+Phylogenetic trees have \emph{nodes} (\emph{leaves} and \emph{internal
+  nodes}), and \emph{edges}.
 
-Internal nodes represent speciation events. An internal node also represents a species that is the most recent common ancestor of all the descendants of that node, and in some cases (for example, when fossil data is used), may correspond to a known species.
+The leaves of a phylogenetic tree represent extant taxa that have been
+sampled for the analysis, referred to as the taxon set.
 
-Edges represent the evolution of a species without any speciation events that led to multiple extant species in the dataset (that is to say, speciation events may have occurred along an edge, but only one of those species survived to the present day and was included in the analysis). Edges may have a length, which represents the amount of time between speciation events. 
+Internal nodes represent speciation events. An internal node also
+represents a species that is the most recent common ancestor of all
+the descendants of that node, and in some cases (for example, when
+fossil data is used), may correspond to a known species.
+
+Edges represent the evolution of a species without any speciation
+events that led to multiple extant species in the dataset (that is to
+say, speciation events may have occurred along an edge, but only one
+of those species survived to the present day and was included in the
+analysis). Edges may have a length, which represents the amount of
+time between speciation events.
 
 
-Each edge also corresponds to a split, or bipartition, in the taxon set. The descendants of an internal node $n$ are a clade, and the parent edge of that node separates that clade from the rest of the taxa, which do not have $n$ as an ancestor. 
+Each edge also corresponds to a split, or bipartition, in the taxon
+set. The descendants of an internal node $n$ are a clade, and the
+parent edge of that node separates that clade from the rest of the
+taxa, which do not have $n$ as an ancestor.
 
 
 %\subsection{Rooted and unrooted trees}
 
-Phylogenetic trees may be rooted or unrooted. In many models of evolution, the root is not identifiable; in other words, every rooting of the same unrooted tree will produce the same distribution of site patterns on the leaves of the tree. Accurately identifying the root of an unrooted tree can be challenging in some cases, especially for gene trees that evolve under ILS or HGT (see Section \ref{sec:heterogeneity}). 
+Phylogenetic trees may be rooted or unrooted. In many models of
+evolution, the root is not identifiable; in other words, every rooting
+of the same unrooted tree will produce the same distribution of site
+patterns on the leaves of the tree. Accurately identifying the root of
+an unrooted tree can be challenging in some cases, especially for gene
+trees that evolve under ILS or HGT (see Section
+\ref{sec:heterogeneity}).
 %TODO figure
 
-Trees may be binary or multifurcating (non-binary). Each internal node in a binary tree has degree $3$ (except for the root, which has degree $2$), while internal nodes in multifurcating trees may have higher degrees. Since speciation events are in reality binary, multifurcations in trees represent an uncertainty as to the ordering of two or more speciation events.
-%TODO figure
+Trees may be binary or multifurcating (non-binary). Each internal node
+in a binary tree has degree $3$ (except for the root, which has degree
+$2$), while internal nodes in multifurcating trees may have higher
+degrees. Since speciation events are in reality binary,
+multifurcations in trees represent an uncertainty as to the ordering
+of two or more speciation events.
+% TODO figure
+
+\subsection{Distances between trees}
+
+The distance between two trees that share a set of taxa can be
+measured in a few different ways, the most common of which is the
+Robinson-Foulds (RF) distance. Each edge in the trees corresponds to a
+split of the taxon set, so a tree can be represented as a set of
+bipartitions of the taxon set. The RF distance between two trees is
+the percentage of bipartitions that are shared between the two trees;
+in other words:
+
+\begin{equation}
+  \label{eq:rfdistance}
+  RF(T_1, T_2) = \frac{|bp(T_1) \cap bp(T_2)|}{|bp(T_1 \cup bp(T_2)|}
+\end{equation}
+TODO CHECK
+
+The RF distance is commonly used to measure the accuracy of an
+estimation method with respect to a known true tree from a
+simulation.
+
+Other tree distance metrics are also used, including triplet and
+quartet distances. A triplet is a rooted tree on three leaves, and a
+quartet is an unrooted tree on four leaves. For three taxa, there are
+three possible rooted triplet topologies, and for four taxa, there are
+three possible unrooted quartet topologies. Triplets and quartets are
+the smallest informative rooted and unrooted trees; there is only one
+possible rooted tree on two taxa and one possible unrooted tree on
+three taxa. The triplet or quartet distance between two trees is the
+proportion of quartet topologies shared between the trees.
+
+\section{Character sequences}
+
+The input to phylogenetic estimation problems is often an alignment
+matrix containing DNA, RNA, or amino acid sequences. Each row in the
+alignment corresponds to a single taxon, and each column represents a
+single character, which may take various character states (depending
+on the type of the sequences; a DNA character can take the states
+$\{A,C,T,G\}$), or $-$, representing a character insertion or deletion
+(``indel'').
 
 \section{A simple model of evolution}
 \label{section:simple-model}
 
 
+The generalized time-reversible (GTR) mathematical model of evolution
+is a Markov process, where each character evolves independently, and a
+character transitions from one state to another along an edge $e$
+depending on the length of $e$ and a diagonally symmetrical \emph{rate
+  matrix}. 
 
-\section{The phylogenomic pipeline}
-A phylogenomic analysis starts with biological specimens. Biologists extract DNA from each specimen and run it through a DNA sequencing machine. The sequencing process will chop the genome into overlapping reads that may range from tens of base pairs to thousands of base pairs, depending on the sequencing technology. An assembler then combines the reads into genomes. The next step is to align the genomes. An alignment algorithm adds ``indels'' to each genome to make them all the same length. The $i^{th}$ site in each genome is assumed to correspond to the same site in the common ancestor of the organisms being studied, having evolved through a sequence of substitutions, insertions, and deletions. At this point, a variety of methods can be used to analyze the genomes to generate an evolutionary tree.
-
-This dissertation focuses on the last stage of this pipeline: starting from an alignment and generating an evolutionary tree. Nevertheless, the earlier stages are important as errors produced there will result in inaccuracies in the final tree.
-
-The following sections will discuss various factors that make phylogenomic estimation more complicated than the simple model from Section \ref{section:simple-model} would imply. 
+This model is useful because computing the relative likelihoods of
+different trees given a sequence alignment is not difficult, and
+maximum-likelihood tree estimators are an important phylogenetic tool.
 
 \section{Gene tree heterogeneity}
 \label{sec:heterogeneity}
-A variety of biological effects complicate evolutionary models and create a need for more sophisticated phylogenomic algorithms. Some of the most interesting and important effects result in gene tree heterogenity, where different parts of the genome appear to have evolved in different ways. 
 
-subsection{Horizontal gene transfer (HGT)}
+However, evolution is in reality more complex than the GTR model
+suggests. This is because different parts of the genome evolve in
+different ways, with different evolutionary histories and evolutionary
+trees. This can happen for a number of reasons, two of which are
+horizontal gene transfer (HGT) and incomplete lineage sorting (ILS).
 
-%TODO figure
-The easiest to understand cause of gene tree heterogeneity is horizontal (or lateral) gene transfer (HGT or LGT). 
+We refer to a portion of the genome that has a single evolutionary
+history as a \emph{c-gene} or often as just a \emph{gene}. This is
+different from the standard biological definition of a gene, (i.e. a
+genetic sequence that codes for a particular protein). The
+evolutionary history of a gene is captured in a \emph{gene tree}, and
+differences between these gene trees are referred to as \emph{gene
+  tree heterogeneity}.
 
-\subsection{Incomplete lineage sorting (ILS)}
+\subsection{Horizontal gene transfer (HGT)}
+
+% TODO figure
+The easiest to understand cause of gene tree heterogeneity is
+horizontal (or lateral) gene transfer (HGT or LGT). An HGT event
+occurs when two organisms from different species exchange DNA. There
+are many biological reasons for this. Bacteria, for example, emit DNA
+in the form of short circular segments called plasmids, and other
+bacteria can readily consume these plasmids and add them to their own
+DNA. Bacterial evolutionary trees have high levels of HGT, and for
+many analyses, it is more appropriate to think of bacterial evolution
+as represented by a network rather than a tree. Eukaryotic organisms
+also experience HGT, although much less frequently than bacteria. A
+common example is hybridization, where two different species can mate
+to produce fertile offspring. 
+
+
+\subsection{Incomplete lineage sorting (ILS) and the coalescent model}
+
+Incomplete lineage sorting (ILS) is a much more common cause of gene
+tree heterogeneity among eukaryotes. This process is modeled by the
+multispecies coalescent. 
+
+\section{Phylogenomic estimation under the coalescent model}
+
+Maximum likelihood estimation under the 
+
 \subsection{Short loci}
 
 %things outside of the scope of my thesis
-\section{Additional sources of error in phylogenomic analyses}
-\subsection{Rate heterogeneity}
-\subsection{Alignment error}
 
 \section{Techniques for phylogenomic estimation}
 
@@ -195,33 +388,40 @@ The easiest to understand cause of gene tree heterogeneity is horizontal (or lat
 \subsection{Divide and conquer methods}
 
 \part{Supertree Estimation}
+\label{part:supertree}
+
 \chapter{FastRFS}
+\label{chapter:fastrfs}
 \input{fastrfs.tex}
 
-\chapter{Improving Dynamic Programming for Phylogenomic Estimation with SIESTA}
+\chapter{Improving Dynamic Programming for Phylogenomic Estimation
+  with SIESTA}
+\label{chapter:siesta}
 \input{siesta.tex}
 \section{Supplementary data for SIESTA}
 \input{siesta-supplement.tex}
 
 \chapter{Supertree Estimation with ASTRID}
+\label{chapter:astrid-missing}
 \input{astrid-missing.tex}
 
 
 
 
 \part{Species Tree Estimation}
+\label{part:speciestree}
+
 \chapter{Species Tree Estimation with ASTRID}
+\label{chapter:astrid}
 \input{astrid.tex}
-\section{Additional Implementation details}
-\subsection{Fast distance matrix calculation}
-\subsection{Distance methods}
-\subsection{Handling multiple individuals per taxon}
 
 
 \chapter{SVDquest}
+\label{chapter:svdquest}
 \input{svdquest.tex}
 
 \chapter{Species Tree Estimation with ILS and HGT}
+\label{chapter:hgt}
 \input{hgt.tex}
 
 
@@ -229,9 +429,6 @@ The easiest to understand cause of gene tree heterogeneity is horizontal (or lat
 
 \chapter{Bibliography}
 \printbibliography
-
-\appendix*
-\include{Appendix.tex}
 
 \backmatter
 
