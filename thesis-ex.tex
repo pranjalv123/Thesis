@@ -21,7 +21,7 @@
 \usepackage{array, tabularx, caption, boldline}
 \usepackage{makecell}
 \usepackage{cellspace}
-\usepackage[citestyle=numeric-comp]{biblatex}
+\usepackage[citestyle=numeric-comp,giveninits=true,doi=false,isbn=false,url=false,eprint=false]{biblatex}
 
 \addbibresource{thesisbib.bib}
 \addbibresource{astrid.bib}
@@ -278,14 +278,14 @@ measured in a few different ways, the most common of which is the
 Robinson-Foulds (RF) distance. Each edge in the trees corresponds to a
 split of the taxon set, so a tree can be represented as a set of
 bipartitions of the taxon set. The RF distance between two trees is
-the percentage of bipartitions that are shared between the two trees;
+the number of bipartitions that are shared between the two trees;
 in other words:
 
 \begin{equation}
   \label{eq:rfdistance}
-  RF(T_1, T_2) = \frac{|bp(T_1) \cap bp(T_2)|}{|bp(T_1 \cup bp(T_2)|}
+  RF(T_1, T_2) = |Bip(T_1) \triangle Bip(T_2)|
 \end{equation}
-TODO CHECK
+
 
 The RF distance is commonly used to measure the accuracy of an
 estimation method with respect to a known true tree from a
@@ -299,7 +299,7 @@ three possible unrooted quartet topologies. Triplets and quartets are
 the smallest informative rooted and unrooted trees; there is only one
 possible rooted tree on two taxa and one possible unrooted tree on
 three taxa. The triplet or quartet distance between two trees is the
-proportion of quartet topologies shared between the trees.
+proportion of triplet or quartet topologies shared between the trees.
 
 \section{Character sequences}
 
@@ -311,7 +311,7 @@ on the type of the sequences; a DNA character can take the states
 $\{A,C,T,G\}$), or $-$, representing a character insertion or deletion
 (``indel'').
 
-\section{A simple model of evolution}
+\section{The GTR model of evolution}
 \label{section:simple-model}
 
 
@@ -362,30 +362,55 @@ to produce fertile offspring.
 \subsection{Incomplete lineage sorting (ILS) and the coalescent model}
 
 Incomplete lineage sorting (ILS) is a much more common cause of gene
-tree heterogeneity among eukaryotes. This process is modeled by the
-multispecies coalescent. 
+tree heterogeneity among eukaryotes. ILS is most common when population sizes are large and speciation times are short. In these cases, mutations might not become distributed throughout a population in the time between speciation events; in other words, looking back in time, two lineages for a particular gene might not coalesce on the edge that corresponds to the common ancestor of their species. This process can result in gene trees that differ from species trees, and is modeled by the multispecies coalescent. 
 
 \section{Phylogenomic estimation under the coalescent model}
 
-Maximum likelihood estimation under the 
+Three general approaches are used for phylogenomic estimation under the coalescent model. 
 
-\subsection{Short loci}
+The first of these is the Bayesian Markov Chain Monte Carlo co-estimation approach. These methods sample from tree space to simultaneously estimate a probability distribution for gene trees and species trees. While they may in theory provide more information about the dataset than other methods and can be quite accurate, in practice they are extremely slow and cannot be run on datasets with more than about 50 taxa.
 
-%things outside of the scope of my thesis
+The second approach is concatenated maximum-likelihood (CA-ML). The alignments for each c-gene are concatenated together to form a single long alignment, and a maximum likelihood estimator produces a tree. Commonly used maximum-likelihood methods are RAxML, FastTree, and IQ-TREE. CA-ML is in practice accurate on many datasets; however, it is not statistically consistent on datasets with ILS, and in fact can be positively misleading - that is, as the amount of data increases, the probability of producing the correct tree does not converge to $1$ and the probability of producing an incorrect tree may converge to $1$.
 
-\section{Techniques for phylogenomic estimation}
+The third type of methods, and the ones focused on here, are coalescent-aware summary methods. These typically operate in two phases. First, a maximum-likelihood method estimates a gene tree on each gene's alignment. Then, the summary method uses the gene trees to estimate the species tree. Some commonly used coalescent-aware methods include ASTRAL, MP-EST, NJst, ASTRID, and SVDquest. 
 
-\subsection{Concatenated maximum-likelihood (CA-ML) analyses}
-\subsection{Bayesian Markov chain Monte Carlo methods}
-\subsection{Coalescent-aware methods}
 \subsubsection{ASTRAL}
+
+ASTRAL takes as input a set of gene trees and outputs a species tree that minimizes the quartet distance to the gene trees. This is an NP-hard problem, but ASTRAL is able to solve a constrained version in polynomial time. It first generates a set $X$ of bipartitions from the input gene trees. Then outputs the tree with the lowest quartet distance to the input trees, constrained such that every bipartition in that tree comes from the set $X$. ASTRAL is fast and accurate in practice.
+
 \subsubsection{MP-EST}
+
+MP-EST takes as input a set of rooted gene trees and minimizes the rooted triplet distance to the set of input trees. This is also an NP-hard problem, and MP-EST uses a set of heuristics to generate an approximate solution. MP-EST can be slow in practice, and is typically less accurate than leading methods.
+
 \subsubsection{NJst}
 
+NJst takes as input a set of gene trees, and calculates distance matrices based on topological distances in each tree. It averages those matrices together and runs neighbor-joining on the average matrix. NJst gives fairly accurate trees in practice, but is relatively slow compared to other methods.
+
+\subsubsection{ASTRID}
+
+ASTRID (see Chapter \ref{chapter:astrid}) uses a similar approach to NJst, computing the same average distance matrix, but can use a variety of distance based phylogenetic estimation methods to find more accurate trees than NJst in less time. ASTRID gives accurate trees in practice, and is much faster than any competing method, especially on large datasets.
+
+\subsubsection{SVDquest}
+
+SVDquest (see Chapter \ref{chapter:svdquest}) is an implementation of the SVDquartets technique, which differs somewhat from other summary methods in that it estimates its species tree directly from alignments instead of from gene trees. SVDquartets generates a set of quartets from the alignments, and SVDquest uses a procedure similar to ASTRAL to find a tree that maximizes support over these quartets.
+
 \section{Supertree estimation}
+
+Supertree estimation methods are designed to combine trees on subsets of the entire taxon set into one large tree. The input trees for supertree estimation are typically assumed to differ only because of estimation error, not because of ILS, HGT, or other sources of ``true'' discord. 
+These methods are frequently used to combine smaller datasets, perhaps from different analyses, into one large dataset. They can also be used as a part of a divide and conquer method for species tree estimation. A large dataset is broken up into overlapping taxon subsets, a species tree is estimated on each subset, and a supertree method is used to combine the small trees into a tree on the entire dataset. The process can be iterated, with the new tree used to guide the decomposition of the tree into new subsets.
+
 \subsection{Methods}
-\subsubsection{MRL}
-\subsection{Divide and conquer methods}
+
+Some species tree estimation methods, including ASTRAL and ASTRID, can be used effectively for supertree estimation. However, some methods are designed explicitly for supertree estimation, including MRP, MRL, and FastRFS. 
+
+\subsubsection{MRP and MRL}
+
+Matrix Representation with Parsimony (MRP) and Matrix Representation with Likelihood (MRL) are two related supertree estimation methods. They start by creating an alignment matrix where each column corresponds to a particular edge in an input tree. Taxa on one side are coded as $0$, taxa on the other side are coded as $1$, and taxa not in the tree are coded as $-$. Then, a phylogenetic maximum parsimony estimator or maximum likelihood estimator like RAxML is run on this matrix to produce a supertree.
+
+\subsubsection{FastRFS}
+
+FastRFS (discussed further in Chapter \ref{chapter:fastrfs}) is an RF supertree method. It minimizes the sum of the Robinson-Foulds distances to the input trees using a constrained exact optimization algorithm similar to that used in ASTRAL and SVDquest. It can also use another supertree method as a subroutine to expand its search space and improve its results. 
+
 
 \part{Supertree Estimation}
 \label{part:supertree}
@@ -427,7 +452,6 @@ Maximum likelihood estimation under the
 
 \chapter{Conclusions}
 
-\chapter{Bibliography}
 \printbibliography
 
 \backmatter
